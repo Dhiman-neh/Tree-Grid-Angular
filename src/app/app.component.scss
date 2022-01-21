@@ -1,0 +1,33 @@
+.grid-freezeprop {
+  padding-bottom: 5px;
+}
+
+.grid-freezecol {
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.e-popup.e-popup-open.e-dialog {
+  min-height: 500px !important;
+}
+.e-popup.e-popup-open.e-dialog.delete-popup,
+.e-popup.e-popup-open.e-dialog.delete-alert-popup {
+  min-height: 205px !important;
+}
+
+.mt-2 {
+  margin-top: 1rem !important;
+}
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+.ml-3 {
+  margin-left: 1rem !important;
+}
+.button-container {
+  padding: 12px 20px 12px 12px;
+}
+.e-checkbox-wrapper,
+.e-colorpicker-wrapper {
+  margin-left: 5px;
+}

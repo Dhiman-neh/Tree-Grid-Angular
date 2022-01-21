@@ -26,7 +26,7 @@ import {
   TreeGridComponent,
   SelectionSettingsModel,
 } from '@syncfusion/ej2-angular-treegrid';
-import { Column, getColumnModelByUid } from '@syncfusion/ej2-grids';
+import { Column } from '@syncfusion/ej2-grids';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { frozenSampleData } from 'jsondata';
 import { Observable } from 'rxjs';
@@ -47,6 +47,7 @@ declare var $: any;
     ResizeService,
     ColumnMenuService,
     ResizeService,
+    ColumnChooserService,
     EditService,
     ExcelExportService,
     PdfExportService,
@@ -84,8 +85,7 @@ export class AppComponent {
   public editColumnDialog!: DialogComponent;
   @ViewChild('deleteColumnDialog')
   public deleteColumnDialog!: DialogComponent;
-  @ViewChild('deleteAlertDialog')
-  public deleteAlertDialog!: DialogComponent;
+
   @ViewChild('addRowDialog')
   public addRowDialog!: DialogComponent;
   @ViewChild('addSubTaskDialog')
@@ -109,8 +109,19 @@ export class AppComponent {
   public target: string = '.control-section';
   public width: string = '300px';
   public refresh: boolean = true;
-  public columnData: any[] = [];
-  public directionData: any[] = [
+  public columnData: Object[] = [
+    { id: 'taskID', name: 'Task ID' },
+    { id: 'taskName', name: 'TaskName' },
+    { id: 'startDate', name: 'Start Date' },
+    { id: 'endDate', name: 'End Date' },
+    { id: 'duration', name: 'Duration' },
+    { id: 'progress', name: 'Progress' },
+    { id: 'priority', name: 'Priority' },
+    { id: 'designation', name: 'Designation' },
+    { id: 'employeeID', name: 'EmployeeID' },
+    { id: 'approved', name: 'Approved' },
+  ];
+  public directionData: Object[] = [
     { id: 'Left', name: 'Left' },
     { id: 'Right', name: 'Right' },
     { id: 'Center', name: 'Center' },
@@ -141,21 +152,15 @@ export class AppComponent {
   isSubTask: boolean = false;
   parentTaskID: any;
   isDeleteRow: boolean = false;
-  errormsg: any = '';
 
   constructor(private homeService: HomeService, private fb: FormBuilder) {}
 
   ngOnInit(): void {
-    // this.data1 = frozenSampleData;
+    this.data1 = frozenSampleData;
     this.createForm();
     this.createRowForm();
 
     this.pageSettings = { pageSize: 10 };
-    this.filterSettings = {
-      type: 'FilterBar',
-      hierarchyMode: 'Parent',
-      mode: 'Immediate',
-    };
     this.contextMenuItems = [
       { text: 'Add Next', target: '.e-content', id: 'addnext' },
       { text: 'Add Child', target: '.e-content', id: 'addchild' },
@@ -169,10 +174,10 @@ export class AppComponent {
       { text: 'New Column', target: '.e-headercontent', id: 'newcolumn' },
       { text: 'Edit Column', target: '.e-headercontent', id: 'editcolumn' },
       { text: 'DelCol', target: '.e-headercontent', id: 'delcolumn' },
-      // { text: 'Choose Column', target: '.e-headercontent', id: 'choosecolumn' },
-      // { text: 'FreezeCol', target: '.e-headercontent', id: 'freezecolumn' },
-      // { text: 'FilterCol', target: '.e-headercontent', id: 'filtercolumn' },
-      // { text: 'MultiSort', target: '.e-headercontent', id: 'multisort' },
+      { text: 'Choose Column', target: '.e-headercontent', id: 'choosecolumn' },
+      { text: 'FreezeCol', target: '.e-headercontent', id: 'freezecolumn' },
+      { text: 'FilterCol', target: '.e-headercontent', id: 'filtercolumn' },
+      { text: 'MultiSort', target: '.e-headercontent', id: 'multisort' },
     ];
 
     this.getDataList();
@@ -181,16 +186,21 @@ export class AppComponent {
 
   createForm() {
     this.addColumnForm = this.fb.group({
-      id: [''],
-      name: [''],
+      // field: [''],
+      // headerText: [''],
+      // width: [''],
+      // format: [''],
+      // textAlign: [''],
+      // editType: [''],
+      columnName: [''],
       color: [''],
       font: [''],
       datatype: [''],
-      freeze: [''],
+      id: [''],
       bgcolor: [''],
-      textAlign: [''],
+      alignment: [''],
       textwrap: [''],
-      width: [''],
+      minwidth: [''],
     });
     this.addRowForm = this.fb.group({
       newRow: [true],
@@ -236,9 +246,9 @@ export class AppComponent {
     });
 
     // adding dynamic column as form controlls
-    if (this.columnData && this.columnData.length > 0) {
-      this.columnData.forEach((column) => {
-        this.addRowForm.addControl(column.id, new FormControl(''));
+    if (this.dataColumn && this.dataColumn.length > 0) {
+      this.dataColumn.forEach((column) => {
+        this.addRowForm.addControl(column.columnName, new FormControl(''));
       });
 
       this.addRowForm.removeControl('extra');
@@ -254,7 +264,7 @@ export class AppComponent {
       (res) => {
         console.log(res);
 
-        this.data1 = res.data;
+        this.data = res.data;
         this.filterSettings = {
           type: 'FilterBar',
           hierarchyMode: 'Parent',
@@ -272,7 +282,6 @@ export class AppComponent {
       (res) => {
         console.log(res);
         this.dataColumn = res.data;
-        this.columnData = res.data;
         this.createRowForm();
         console.log(this.dataColumn);
       },
@@ -282,31 +291,21 @@ export class AppComponent {
     );
   }
 
-  chooseColumn(event: any) {
-    if (event && event.itemData) {
-      let id = event.itemData.id;
-      this.columnData = this.columnData.filter((item) => {
-        if (item.id != id) {
-          return item;
-        }
-      });
-    }
-  }
-
   createColumn() {
-    let payload: any = {};
+    let payload = {};
     let apiObservable: Observable<any>;
     if (this.isEditColumn) {
       payload = {
-        id: this.addColumnForm.value.id,
-        name: this.addColumnForm.value.name,
-        datatype: this.addColumnForm.value.datatype,
-        width: this.addColumnForm.value.width,
-        textAlign: this.addColumnForm.value.textAlign,
-        bgcolor: this.addColumnForm.value.bgcolor,
-        color: this.addColumnForm.value.color,
-        font: this.addColumnForm.value.font,
-        textwrap: this.addColumnForm.value.textwrap,
+        columnName: this.addColumnForm.value.columnName,
+        metadata: {
+          datatype: this.addColumnForm.value.datatype,
+          minwidth: this.addColumnForm.value.minwidth,
+          bgcolor: this.addColumnForm.value.bgcolor,
+          color: this.addColumnForm.value.color,
+          font: this.addColumnForm.value.font,
+          alignment: this.addColumnForm.value.alignment,
+          textwrap: this.addColumnForm.value.textwrap,
+        },
       };
       apiObservable = this.homeService.editColumn(
         payload,
@@ -314,17 +313,18 @@ export class AppComponent {
       );
     } else {
       payload = {
-        id: this.getColumnId(this.addColumnForm.value.name),
-        name: this.addColumnForm.value.name,
-        datatype: this.addColumnForm.value.datatype,
-        width: this.addColumnForm.value.width,
-        textAlign: this.addColumnForm.value.textAlign,
-        bgcolor: this.addColumnForm.value.bgcolor,
-        color: this.addColumnForm.value.color,
-        font: this.addColumnForm.value.font,
-        textwrap: this.addColumnForm.value.textwrap,
+        columnName: this.addColumnForm.value.columnName,
+        id: this.generateRandomID(),
+        metadata: {
+          datatype: this.addColumnForm.value.datatype,
+          minwidth: this.addColumnForm.value.minwidth,
+          bgcolor: this.addColumnForm.value.bgcolor,
+          color: this.addColumnForm.value.color,
+          font: this.addColumnForm.value.font,
+          alignment: this.addColumnForm.value.alignment,
+          textwrap: this.addColumnForm.value.textwrap,
+        },
       };
-
       apiObservable = this.homeService.addColumn(payload);
     }
     apiObservable.subscribe(
@@ -343,31 +343,36 @@ export class AppComponent {
     );
   }
 
-  getColumnId(columnName: any) {
-    return columnName.replace(/\s+/g, '') + this.generateRandomID();
-  }
-
   createNewRow() {
     let payload: any = this.addRowForm.value;
-    debugger;
+    // {
+    //   taskName: this.addRowForm.value.taskName,
+    //   startDate: this.addRowForm.value.startDate,
+    //   endDate: this.addRowForm.value.endDate,
+    //   progress: this.addRowForm.value.progress,
+    //   duration: this.addRowForm.value.duration,
+    //   priority: this.addRowForm.value.priority,
+    //   approved: this.addRowForm.value.approved,
+    // };
+
     let apiObservable: Observable<any>;
     if (this.isEditRow) {
       let rowData = this.eventArgs.rowInfo.rowData;
       if (rowData && rowData.parentItem) {
         apiObservable = this.homeService.updateSubTaskData(
-          rowData.parentItem['taskID'],
-          payload['taskID'],
+          rowData.parentItem['Task ID'],
+          payload['Task ID'],
           payload
         );
       } else apiObservable = this.homeService.updateRowData(payload);
     } else if (this.isSubTask) {
-      delete payload['taskID'];
+      delete payload['Task ID'];
       apiObservable = this.homeService.postSubRowData(
         payload,
         this.parentTaskID
       );
     } else {
-      delete payload['taskID'];
+      delete payload['Task ID'];
       apiObservable = this.homeService.postRowData(payload);
     }
     apiObservable.subscribe(
@@ -398,24 +403,23 @@ export class AppComponent {
     this.addColumnForm.reset();
     this.addRowForm.reset();
     this.addColumnDialog.hide();
-    this.addSubTaskDialog.hide();
     this.addRowDialog.hide();
+    // this.EditRowDialog.hide();
     this.editColumnDialog.hide();
     this.deleteColumnDialog.hide();
-    this.deleteAlertDialog.hide();
   }
 
   patchColumnValues(columnData: any) {
     this.addColumnForm.patchValue({
       id: columnData.id,
-      color: columnData.color,
-      name: columnData.name,
-      datatype: columnData.datatype,
-      font: columnData.font,
-      bgcolor: columnData.bgcolor,
-      textAlign: columnData.textAlign,
-      textwrap: columnData.textwrap,
-      width: columnData.width,
+      color: columnData.metadata.color,
+      columnName: columnData.columnName,
+      datatype: columnData.metadata.datatype,
+      font: columnData.metadata.font,
+      bgcolor: columnData.metadata.bgcolor,
+      alignment: columnData.metadata.alignment,
+      textwrap: columnData.metadata.textwrap,
+      minwidth: columnData.metadata.minwidth,
     });
   }
   patchRowValues(rowData: any) {
@@ -432,12 +436,7 @@ export class AppComponent {
           if (this.deleteColumnDialog) this.deleteColumnDialog.hide();
         },
         (error) => {
-          debugger;
-          if (error.status == 400) {
-            this.errormsg = error.error;
-            this.onCancelClick();
-            this.deleteAlertDialog.show();
-          }
+          console.log(error);
         }
       );
     }
@@ -446,7 +445,7 @@ export class AppComponent {
   deleteRowClick(rowData: any) {
     if (rowData && rowData.parentItem) {
       this.homeService
-        .deleteSubTaskData(rowData.parentItem['taskID'], rowData['taskID'])
+        .deleteSubTaskData(rowData.parentItem['Task ID'], rowData['Task ID'])
         .subscribe(
           (res) => {
             console.log(res);
@@ -457,7 +456,7 @@ export class AppComponent {
           }
         );
     } else {
-      this.homeService.deleteRowData(rowData['taskID']).subscribe(
+      this.homeService.deleteRowData(rowData['Task ID']).subscribe(
         (res) => {
           console.log(res);
           this.getDataList();
@@ -482,8 +481,8 @@ export class AppComponent {
 
       let fieldName = this.eventArgs.column.field;
       // console.log(this.columnId);
-      let patchColumnData = this.columnData.filter(
-        (item) => item.id == fieldName
+      let patchColumnData = this.dataColumn.filter(
+        (item) => item.columnName == fieldName
       );
       if (patchColumnData.length > 0) {
         let columnData = patchColumnData[0];
@@ -493,9 +492,8 @@ export class AppComponent {
     } else if (args?.item.id === 'delcolumn') {
       this.eventArgs = args;
       let fieldName = this.eventArgs.column.field;
-      // console.log(this.columnId);
-      let patchColumnData = this.columnData.filter(
-        (item) => item.id == fieldName
+      let patchColumnData = this.dataColumn.filter(
+        (item) => item.columnName == fieldName
       );
       if (patchColumnData.length > 0) {
         this.columnIDToBeDeleted = patchColumnData[0].id;
@@ -526,7 +524,7 @@ export class AppComponent {
       this.isSubTask = true;
       this.isEditRow = false;
       this.eventArgs = args;
-      this.parentTaskID = this.eventArgs.rowInfo.rowData['taskID'];
+      this.parentTaskID = this.eventArgs.rowInfo.rowData['Task ID'];
       this.addSubTaskDialog.show(); // sub task popup
     } else if (args?.item.id === 'deleterow') {
       this.isDeleteRow = true;

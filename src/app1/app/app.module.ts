@@ -11,7 +11,6 @@ import { DialogModule } from '@syncfusion/ej2-angular-popups';
 import { ButtonAllModule } from '@syncfusion/ej2-angular-buttons';
 import { ColorPickerModule, NumericTextBoxAllModule, TextBoxModule } from '@syncfusion/ej2-angular-inputs';
 
-import { CheckBoxModule } from '@syncfusion/ej2-angular-buttons';
 import { DatePickerModule } from '@syncfusion/ej2-angular-calendars';
 
 @NgModule({
@@ -33,7 +32,6 @@ import { DatePickerModule } from '@syncfusion/ej2-angular-calendars';
     TextBoxModule,
     ColorPickerModule, NumericTextBoxAllModule,
     DatePickerModule,
-    CheckBoxModule
   ],
   providers: [HomeService],
   bootstrap: [AppComponent]

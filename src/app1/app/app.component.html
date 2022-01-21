@@ -1,91 +1,49 @@
 <div class="control-section">
-  <div class="grid-freezeprop">
-    <div class="grid-freezecol">
+  <div class="control-section">
+    <div class="grid-freezeprop">
       <div class="grid-freezecol">
-        <span> Column </span>
+        <div class="grid-freezecol">
+          <span> Column </span>
+        </div>
+        <div class="grid-freezecol">
+          <ejs-dropdownlist
+            id="column"
+            #columndropdown
+            index="7"
+            [dataSource]="columnData"
+            (change)="columnChange($event)"
+            [fields]="fields"
+          ></ejs-dropdownlist>
+        </div>
       </div>
       <div class="grid-freezecol">
-        <ejs-dropdownlist
-          id="column"
-          #columndropdown
-          index="7"
-          [dataSource]="columnData"
-          (change)="columnChange($event)"
-          [fields]="fields"
-        ></ejs-dropdownlist>
-      </div>
-    </div>
-    <div class="grid-freezecol">
-      <div class="grid-freezecol">
-        <span> Freeze Direction </span>
-      </div>
-      <div class="grid-freezecol">
-        <ejs-dropdownlist
-          id="direction"
-          #directiondropdown
-          index="0"
-          [dataSource]="directionData"
-          (change)="directionChange($event)"
-          [fields]="fields"
-        ></ejs-dropdownlist>
+        <div class="grid-freezecol">
+          <span> Freeze Direction </span>
+        </div>
+        <div class="grid-freezecol">
+          <ejs-dropdownlist
+            id="direction"
+            #directiondropdown
+            index="0"
+            [dataSource]="directionData"
+            (change)="directionChange($event)"
+            [fields]="fields"
+          ></ejs-dropdownlist>
+        </div>
       </div>
     </div>
 
-    <div class="grid-freezecol">
-      <div class="grid-freezecol">
-        <span> Hide Column </span>
-      </div>
-      <div class="grid-freezecol">
-        <ejs-dropdownlist
-          id="column"
-          #columndropdown
-          index="7"
-          [dataSource]="columnData"
-          (change)="chooseColumn($event)"
-          [fields]="fields"
-        ></ejs-dropdownlist>
-      </div>
-    </div>
-  </div>
-
-  <ejs-treegrid
-    class="main-treegrid"
-    *ngIf="columnData && columnData.length > 0"
-    #treegrid
-    [dataSource]="data1"
-    [showColumnChooser]="true"
-    [selectionSettings]="selectionOptions"
-    [contextMenuItems]="contextMenuItems"
-    (contextMenuClick)="contextMenuClick($event)"
-    [allowRowDragAndDrop]="true"
-    [allowReordering]="true"
-    [treeColumnIndex]="1"
-    childMapping="subtasks"
-    allowSorting="true"
-    allowSelection="false"
-    allowFiltering="true"
-    [filterSettings]="filterSettings"
-    childMapping="subtasks"
-  >
-    <e-columns>
-      <ng-container *ngFor="let column of columnData; let i = index">
+    <ejs-treegrid
+      #treegrid
+      [dataSource]="data1"
+      height="410"
+      [treeColumnIndex]="1"
+      childMapping="subtasks"
+      allowSorting="true"
+      allowSelection="false"
+    >
+      <e-columns>
         <e-column
-          *ngIf="i == 0"
-          field="{{ column.id }}"
-          headerText="{{ column.name }}"
-          width="{{ column.width }}"
-          textAlign="{{ column.textAlign }}"
-          freeze="Left"
-        ></e-column>
-        <e-column
-          *ngIf="i > 0"
-          field="{{ column.id }}"
-          headerText="{{ column.name }}"
-          width="{{ column.width }}"
-          textAlign="{{ column.textAlign }}"
-        ></e-column>
-      </ng-container>
-      <!-- <e-column
           field="taskID"
           headerText="Task ID"
           width="100"
@@ -150,35 +108,89 @@
           displayAsCheckBox="true"
           textAlign="Left"
           freeze="Right"
-        ></e-column> -->
+        ></e-column>
+      </e-columns>
+    </ejs-treegrid>
+    <ejs-dialog
+      #alertDialog
+      [buttons]="dlgButtons"
+      [header]="header"
+      [animationSettings]="animationSettings"
+      [content]="content"
+      [showCloseIcon]="showCloseIcon"
+      [target]="target"
+      [width]="width"
+      [visible]="visible"
+    >
+    </ejs-dialog>
+
+    <!-- custom code start -->
+    <style>
+      .grid-freezeprop {
+        padding-bottom: 5px;
+      }
+
+      .grid-freezecol {
+        display: inline-block;
+        padding-right: 10px;
+      }
+    </style>
+    <!-- custom code end -->
+  </div>
+</div>
+
+<div class="col-lg-9 control-section">
+  <ejs-treegrid
+    #treegrid
+    [dataSource]="data"
+    height="50vh"
+    [toolbar]="toolbar"
+    [showColumnChooser]="true"
+    [selectionSettings]="selectionOptions"
+    [contextMenuItems]="contextMenuItems"
+    (contextMenuClick)="contextMenuClick($event)"
+    allowFiltering="true"
+    [filterSettings]="filterSettings"
+    childMapping="subtasks"
+    [allowRowDragAndDrop]="true"
+    [allowReordering]="true"
+    [treeColumnIndex]="1"
+  >
+    <e-columns>
+      <ng-container *ngFor="let column of dataColumn; let i = index">
+        <e-column
+          *ngIf="i == 0"
+          field="{{ column.columnName }}"
+          headerText="{{ column.columnName }}"
+          textAlign="{{ column.metadata.alignment }}"
+          width="{{ column.metadata.minwidth }}"
+        ></e-column>
+        <e-column
+          *ngIf="i > 0"
+          field="{{ column.columnName }}"
+          headerText="{{ column.columnName }}"
+          textAlign="{{ column.metadata.alignment }}"
+          width="{{ column.metadata.minwidth }}"
+        ></e-column>
+      </ng-container>
+
+      <!-- <e-column field="task Name" headerText="Task Name" width="200"></e-column> -->
     </e-columns>
   </ejs-treegrid>
-  <ejs-dialog
-    #alertDialog
-    [buttons]="dlgButtons"
-    [header]="header"
-    [animationSettings]="animationSettings"
-    [content]="content"
-    [showCloseIcon]="showCloseIcon"
-    [target]="target"
-    [width]="width"
-    [visible]="visible"
-  >
-  </ejs-dialog>
-
-  <!-- custom code start -->
-  <style>
-    .grid-freezeprop {
-      padding-bottom: 10px;
-    }
-
-    .grid-freezecol {
-      display: inline-block;
-      padding-right: 10px;
-    }
-  </style>
-  <!-- custom code end -->
 </div>
+
+<ejs-dialog
+  #alertDialog
+  [buttons]="dlgButtons"
+  [header]="header"
+  [animationSettings]="animationSettings"
+  [content]="content"
+  [showCloseIcon]="showCloseIcon"
+  [target]="target"
+  [width]="width"
+  [visible]="visible"
+>
+</ejs-dialog>
 
 <div class="control-section">
   <ejs-dialog
@@ -197,7 +209,7 @@
         <div class="form-group">
           <label class="mb-1">Column Name</label>
           <ejs-textbox
-            formControlName="name"
+            formControlName="columnName"
             autocomplete="off"
             placeholder="Enter Column Name"
           >
@@ -217,13 +229,13 @@
           <ejs-textbox
             type="number"
             autocomplete="off"
-            formControlName="width"
+            formControlName="minwidth"
             placeholder="Enter Minimum Width"
           >
           </ejs-textbox>
         </div>
         <div class="form-group mt-2">
-          <label class="mb-1">Background Color</label>
+          <label class="mb-1">Background Color</label><br />
           <input
             formControlName="bgcolor"
             ejs-colorpicker
@@ -232,7 +244,7 @@
           />
         </div>
         <div class="form-group mt-2">
-          <label class="mb-1">Color</label>
+          <label class="mb-1">Color</label><br />
           <input
             formControlName="color"
             ejs-colorpicker
@@ -254,14 +266,14 @@
           <label class="mb-1">Alignment</label>
           <ejs-dropdownlist
             id="addalignment"
-            formControlName="textAlign"
+            formControlName="alignment"
             [dataSource]="alignmentType"
             placeholder="Select your option"
           ></ejs-dropdownlist>
         </div>
         <div class="form-group mt-2">
-          <label class="mb-1">Text Wrap</label>
-          <ejs-checkbox formControlName="textwrap"></ejs-checkbox>
+          <label class="mb-1">Text Wrap</label><br />
+          <input type="checkbox" formControlName="textwrap" />
         </div>
       </form>
     </ng-template>
@@ -301,7 +313,7 @@
           <label class="mb-1">Column Name</label>
           <ejs-textbox
             [htmlAttributes]="htmlAttributes"
-            formControlName="name"
+            formControlName="columnName"
             autocomplete="off"
             placeholder="Enter Column Name"
           >
@@ -316,19 +328,20 @@
             placeholder="Enter Column Name"
           >
           </ejs-textbox>
+          <!-- <ejs-dropdownlist id='edittype' formControlName="datatype" [dataSource]='dataTypes' placeholder = 'Select your option'></ejs-dropdownlist> -->
         </div>
         <div class="form-group mt-2">
           <label class="mb-1">Minimum Width (px)</label>
           <ejs-textbox
             type="number"
             autocomplete="off"
-            formControlName="width"
+            formControlName="minwidth"
             placeholder="Enter Minimum Width"
           >
           </ejs-textbox>
         </div>
         <div class="form-group mt-2">
-          <label class="mb-1">Background Color</label>
+          <label class="mb-1">Background Color</label><br />
           <input
             formControlName="bgcolor"
             ejs-colorpicker
@@ -337,7 +350,7 @@
           />
         </div>
         <div class="form-group mt-2">
-          <label class="mb-1">Color</label>
+          <label class="mb-1">Color</label><br />
           <input
             formControlName="color"
             ejs-colorpicker
@@ -359,14 +372,14 @@
           <label class="mb-1">Alignment</label>
           <ejs-dropdownlist
             id="editalignment"
-            formControlName="textAlign"
+            formControlName="alignment"
             [dataSource]="alignmentType"
             placeholder="Select your option"
           ></ejs-dropdownlist>
         </div>
         <div class="form-group mt-2">
-          <label class="mb-1">Text Wrap</label>
-          <ejs-checkbox formControlName="textwrap"></ejs-checkbox>
+          <label class="mb-1">Text Wrap</label><br />
+          <input type="checkbox" formControlName="textwrap" />
         </div>
       </form>
     </ng-template>
@@ -390,7 +403,6 @@
 
 <div class="control-section">
   <ejs-dialog
-    class="delete-popup"
     #deleteColumnDialog
     [buttons]="dlgButtons"
     [header]="deletetext"
@@ -425,33 +437,6 @@
 
 <div class="control-section">
   <ejs-dialog
-    class="delete-alert-popup"
-    #deleteAlertDialog
-    [buttons]="dlgButtons"
-    [header]="'Alert'"
-    [animationSettings]="animationSettings"
-    [showCloseIcon]="showCloseIcon"
-    [target]="target"
-    width="500px"
-    [visible]="false"
-  >
-    <ng-template #content>
-      <div class="style-wrapper">
-        <h4>{{ errormsg }}</h4>
-      </div>
-    </ng-template>
-    <ng-template #footerTemplate>
-      <div class="button-container">
-        <button ejs-button cssClass="e-normal" (click)="onCancelClick()">
-          Ok
-        </button>
-      </div>
-    </ng-template>
-  </ejs-dialog>
-</div>
-
-<div class="control-section">
-  <ejs-dialog
     #addRowDialog
     [buttons]="dlgButtons"
     [header]="header"
@@ -463,34 +448,40 @@
     [visible]="false"
   >
     <ng-template #content>
-      <form class="" [formGroup]="addRowForm">
-        <div class="form-group mt-2" *ngFor="let con of columnData">
-          <label class="mb-1" *ngIf="con.id != 'taskID'">{{ con.name }}</label>
+      <form class="mt-2" [formGroup]="addRowForm">
+        <div class="form-group" *ngFor="let con of dataColumn">
+          <label class="mb-1" *ngIf="con.columnName != 'Task ID'">{{
+            con.columnName
+          }}</label>
           <ejs-textbox
-            *ngIf="con.datatype == 'STRING' && con.id != 'taskID'"
-            formControlName="{{ con.id }}"
-            placeholder="{{ con.name }}"
+            *ngIf="
+              con.metadata.datatype == 'STRING' && con.columnName != 'Task ID'
+            "
+            formControlName="{{ con.columnName }}"
+            placeholder="{{ con.columnName }}"
           ></ejs-textbox>
           <ejs-datepicker
-            *ngIf="con.datatype == 'DATE'"
-            formControlName="{{ con.id }}"
-            placeholder="{{ con.name }}"
+            *ngIf="con.metadata.datatype == 'DATE'"
+            formControlName="{{ con.columnName }}"
+            placeholder="{{ con.columnName }}"
           ></ejs-datepicker>
           <ejs-textbox
             type="number"
-            *ngIf="con.datatype == 'NUM' && con.id != 'taskID'"
-            formControlName="{{ con.id }}"
-            placeholder="{{ con.name }}"
+            *ngIf="
+              con.metadata.datatype == 'NUM' && con.columnName != 'Task ID'
+            "
+            formControlName="{{ con.columnName }}"
+            placeholder="{{ con.columnName }}"
           ></ejs-textbox>
-
-          <ejs-checkbox
-            *ngIf="con.datatype == 'BOOLEAN'"
-            formControlName="{{ con.id }}"
-          ></ejs-checkbox>
+          <input
+            type="checkbox"
+            *ngIf="con.metadata.datatype == 'BOOLEAN'"
+            formControlName="{{ con.columnName }}"
+          />
           <select
             class="form-control"
-            *ngIf="con.datatype == 'DROPDOWN'"
-            formControlName="{{ con.id }}"
+            *ngIf="con.metadata.datatype == 'DROPDOWN'"
+            formControlName="{{ con.columnName }}"
           >
             <option value="" disabled selected>Select your option</option>
             <option value="text" *ngFor="let i of [1, 2, 3, 4, 5]">
@@ -531,34 +522,40 @@
     [visible]="false"
   >
     <ng-template #content>
-      <form class="" [formGroup]="addRowForm">
-        <div class="form-group mt-2" *ngFor="let con of columnData">
-          <label class="mb-1" *ngIf="con.id != 'taskID'">{{ con.name }}</label>
+      <form class="mt-2" [formGroup]="addRowForm">
+        <div class="form-group" *ngFor="let con of dataColumn">
+          <label class="mb-1" *ngIf="con.columnName != 'Task ID'">{{
+            con.columnName
+          }}</label>
           <ejs-textbox
-            *ngIf="con.datatype == 'STRING' && con.id != 'taskID'"
-            formControlName="{{ con.id }}"
+            *ngIf="
+              con.metadata.datatype == 'STRING' && con.columnName != 'Task ID'
+            "
+            formControlName="{{ con.columnName }}"
             placeholder="Enter Task Name"
           ></ejs-textbox>
           <ejs-datepicker
-            *ngIf="con.datatype == 'DATE'"
-            formControlName="{{ con.id }}"
+            *ngIf="con.metadata.datatype == 'DATE'"
+            formControlName="{{ con.columnName }}"
             placeholder="Select Start Date"
           ></ejs-datepicker>
           <ejs-textbox
             type="number"
-            *ngIf="con.datatype == 'NUM' && con.id != 'taskID'"
-            formControlName="{{ con.id }}"
-            placeholder="{{ con.name }}"
+            *ngIf="
+              con.metadata.datatype == 'NUM' && con.columnName != 'Task ID'
+            "
+            formControlName="{{ con.columnName }}"
+            placeholder="{{ con.columnName }}"
           ></ejs-textbox>
-
-          <ejs-checkbox
-            *ngIf="con.datatype == 'BOOLEAN'"
-            formControlName="{{ con.id }}"
-          ></ejs-checkbox>
+          <input
+            type="checkbox"
+            *ngIf="con.metadata.datatype == 'BOOLEAN'"
+            formControlName="{{ con.columnName }}"
+          />
           <select
             class="form-control"
-            *ngIf="con.datatype == 'DROPDOWN'"
-            formControlName="{{ con.id }}"
+            *ngIf="con.metadata.datatype == 'DROPDOWN'"
+            formControlName="{{ con.columnName }}"
           >
             <option value="" disabled selected>Select your option</option>
             <option value="text" *ngFor="let i of [1, 2, 3, 4, 5]">
